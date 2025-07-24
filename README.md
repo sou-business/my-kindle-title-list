@@ -12,9 +12,12 @@ Amazonに手動ログイン後、自動でページを遷移しすべての書�
 - 書籍が多い場合でも **Enterキーで中断可**（途中まで出力）
 
 ## ※注意点
-kindleライブラリ (https://read.amazon.co.jp/kindle-library) のウェブページDOMからタイトルテキストを抽出し、  
+- kindleライブラリ (https://read.amazon.co.jp/kindle-library) のウェブページDOMからタイトルテキストを抽出し、  
 正規表現で重複を除去しているため、完全な重複排除は難しいです。  
 そのため、kindleライブラリ内のシリーズ作品や所持書籍の整理・把握の補助ツールとしてご利用ください。
+
+- 初回の手動ログイン以降、実行毎のログイン不要とするため専用のchromeプロファイルが作成されます。不要であれば削除してください。
+   `C:\Users\%USERNAME%\AppData\Local\Google\Chrome\`MyKindleListProfile
 
 ## 📦 使用技術
 
