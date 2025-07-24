@@ -28,7 +28,6 @@ def normalize_title(title):
 # 比較用に正規後にスペースも除去
 def normalize_title_for_duplicate_check(title):
     title = normalize_title(title)
-    # title = re.sub(r"：.*", "", title)  # コロン以降カット（副題消す）
     title = re.split(r"[ 　]", title)[0]
     return title.strip().lower()
 
@@ -39,8 +38,9 @@ profile_dir = fr'C:\Users\{user_name}\AppData\Local\Google\Chrome\User Data\{pro
 options = Options()
 options.add_argument("--log-level=3")  # エラーログのみ表示
 options.add_argument("--disable-logging")
-options.add_experimental_option("excludeSwitches", ["enable-logging"])
 options.add_argument(f'--user-data-dir={profile_dir}')
+options.add_argument("--window-size=800,600") 
+options.add_experimental_option("excludeSwitches", ["enable-logging"])
 
 service = Service(ChromeDriverManager().install())
 service = Service(log_path='NUL')
@@ -48,6 +48,7 @@ service = Service(log_path='NUL')
 try: 
     driver = webdriver.Chrome(service=service, options=options)
     driver.get('https://read.amazon.co.jp/kindle-library')
+    driver.set_script_timeout(60)
 except Exception as e:
     print(f"Chromeブラウザの起動に失敗しました: {e}")
     exit(1)
@@ -63,7 +64,7 @@ threading.Thread(target=check_stop, daemon=True).start()
 # ここから自動スクロール
 SCROLL_PAUSE_SEC = 1.0
 unchanged_count = 0
-MAX_UNCHANGED = 20
+MAX_UNCHANGED = 60
 
 print(f"\rタイトル出力中…。書籍の数によっては時間がかかります。")
 start_time = time.time()
@@ -77,12 +78,19 @@ except Exception as e:
 
 # 最初の高さを取得（scroll対象の要素から）
 pos_before_scroll = driver.execute_script("return arguments[0].scrollTop", scroll_target)
+# 下へスクロール可能な限りスクロールを行う
 while True:
     if stop_flag:
         print(f"処理を中断しました。中断した時点でのタイトルを出力します。")
         break
     # スクロールを最下部まで行う
-    driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", scroll_target)
+    try:
+        driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", scroll_target)
+    except Exception as e:
+        print(f"スクロール処理でエラー発生: {e}")
+        stop_flag = True
+        break
+
     time.sleep(SCROLL_PAUSE_SEC)
     pos_after_scroll = driver.execute_script("return arguments[0].scrollTop", scroll_target)
     
