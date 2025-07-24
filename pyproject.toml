@@ -1,0 +1,13 @@
+[project]
+name = "my-kindle-title-list"
+version = "0.1.0"
+description = "Kindle所持書籍タイトルのスクレイピングツール"
+dependencies = [
+    "selenium >= 4.0.0",
+    "webdriver-manager >= 4.0.0",
+    "beautifulsoup4 >= 4.0.0"
+]
+
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
