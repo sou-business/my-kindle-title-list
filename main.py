@@ -18,7 +18,7 @@ def normalize_title(title):
     title = re.sub(r"\(Japanese Edition\)", "", title, flags=re.IGNORECASE) # (Japanese Edition) を削除
     title = re.sub(r"(vol\.?|第)?\d+[巻話章]?", "", title, flags=re.IGNORECASE)  # 巻数
     title = re.sub(r"\d+[上下]", "", title)  # 6上、13下
-    title = re.sub(r"\b\d+\b", "", title)  # 単独数字（7thgardenみたいなのは壊さない）
+    title = re.sub(r"(?<!\w)\d+(?!\w)", "", title)  # 英字に隣接してない数字だけを削除
     title = re.sub(r"（.*?）", "", title)  # 全角カッコの残り
     title = re.sub(r"【.*?】", "", title)  # 全角カッコの残り
     title = re.sub(r"\(.*?\)", "", title)  # 半角カッコの残り
@@ -114,3 +114,5 @@ elapsed_time = end_time - start_time
 print(f"出力にかかった時間: {elapsed_time:.2f}秒")
 print(f"総書籍数: {len(divs)}")
 print(f"\rタイトル一覧出力完了。実行ファイルと同ディレクトリにkindleの所持書籍タイトル一覧.txtが出力されています。")
+
+input("my-kindle-listを終了するには Enter を押してください...")
