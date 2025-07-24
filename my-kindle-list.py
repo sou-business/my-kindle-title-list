@@ -32,7 +32,7 @@ def normalize_title_for_duplicate_check(title):
     title = re.split(r"[ 　]", title)[0]
     return title.strip().lower()
 
-profile_name = "Profile 1"
+profile_name = "MyKindleListProfile"
 user_name = os.getlogin()
 profile_dir = fr'C:\Users\{user_name}\AppData\Local\Google\Chrome\User Data\{profile_name}'
 
@@ -45,8 +45,12 @@ options.add_argument(f'--user-data-dir={profile_dir}')
 service = Service(ChromeDriverManager().install())
 service = Service(log_path='NUL')
 
-driver = webdriver.Chrome(service=service, options=options)
-driver.get('https://read.amazon.co.jp/kindle-library')
+try: 
+    driver = webdriver.Chrome(service=service, options=options)
+    driver.get('https://read.amazon.co.jp/kindle-library')
+except Exception as e:
+    print(f"Chromeブラウザの起動に失敗しました: {e}")
+    exit(1)
 
 # 初回のみ手動でログインが必要（以降は自動ログイン）
 input("ログインが完了したらEnterを押してください...")
@@ -64,7 +68,13 @@ MAX_UNCHANGED = 20
 print(f"\rタイトル出力中…。書籍の数によっては時間がかかります。")
 start_time = time.time()
 
-scroll_target = driver.find_element(By.ID, "library")
+try: 
+    scroll_target = driver.find_element(By.ID, "library")
+except Exception as e:
+    print(f"Kindleライブラリのページが正しく読み込まれていません: {e}")
+    driver.quit()
+    exit(1)
+
 # 最初の高さを取得（scroll対象の要素から）
 pos_before_scroll = driver.execute_script("return arguments[0].scrollTop", scroll_target)
 while True:
@@ -103,12 +113,17 @@ for div in divs:
             duplicate_check_set.add(title_for_check)
             unique_titles.append(title)
 
-# ここでソート（昇順）
+# ソート（昇順）
 unique_titles.sort()
 
-with open("kindleの所持書籍タイトル一覧.txt", "w", encoding="utf-8") as f:
-    for unique_title in unique_titles:
-        f.write(normalize_title(unique_title) + "\n")
+try:
+    with open("kindleの所持書籍タイトル一覧.txt", "w", encoding="utf-8") as f:
+        for unique_title in unique_titles:
+            f.write(normalize_title(unique_title) + "\n")
+except Exception as e:
+    print(f"ファイルの書き込みに失敗しました: {e}")
+    driver.quit()
+    exit(1)
 
 driver.quit()
 end_time = time.time()
