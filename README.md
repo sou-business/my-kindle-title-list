@@ -4,6 +4,8 @@ kindleライブラリから購入した書籍の「シリーズを含むタイ�
 Amazon Kindle の所持書籍タイトル一覧をウェブページのDOM（Document Object Model）から自動取得し、重複を除去してテキストファイルに出力するツールです。  
 Amazonに手動ログイン後、自動でページを遷移しすべての書籍タイトルを収集します。
 
+作成経緯とか課題：https://qiita.com/soujiro/items/7e81845dbc5dc1cfb864
+
 ## ✨ 機能概要
 
 - Kindleライブラリにある **所持書籍タイトルを一覧取得**
