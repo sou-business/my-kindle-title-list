@@ -55,6 +55,6 @@ Amazonに手動ログイン後、自動でページを遷移しすべての書�
    ```powershell
    pip install pyinstaller
    pyinstaller my-kindle-list.py
-
+   ```
 以下ディレクトリにexeファイルが生成される   
 - my-kindle-title-list\dist\my-kindle-list
