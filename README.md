@@ -36,13 +36,25 @@ Amazonに手動ログイン後、自動でページを遷移しすべての書�
 ## 🔧 セットアップ手順
 
 1. このリポジトリをクローン  
-1. 仮想環境の作成（任意） (https://packaging.python.org/ja/latest/guides/installing-using-pip-and-virtual-environments/)
-1. 仮想環境を生成したディレクトリに移動して、仮想環境をアクティブ化（Windowsの場合）  
+1. 仮想環境の作成 py -m venv .venv
+   ```
+   py -m venv .venv
+   ```
+1. 仮想環境を生成したディレクトリで、仮想環境をアクティブ化（Windowsの場合）  
    ```powershell
    .\venv\Scripts\activate
-1. クローン直下（pyproject.tomlのあるディレクトリ）に移動して  
+1. 仮想環境で以下を実行して、ビルド＆依存関係にあるモジュールをインストール
    ```powershell
-    poetry install
+   pip install build
+   pip install -e .
 1. my-kindle-list.pyを実行してください
    ```powershell
    python my-kindle-list.py
+
+## exeを作成したい場合
+   ```powershell
+   pip install pyinstaller
+   pyinstaller my-kindle-list.py
+
+以下ディレクトリにexeファイルが生成される   
+- my-kindle-title-list\dist\my-kindle-list
