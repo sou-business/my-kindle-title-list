@@ -8,12 +8,23 @@ import os
 import re
 import time
 import threading
+import msvcrt
 
+is_stop_tool = False
+stop_threading_event = threading.Event()
+
+# Windows環境前提(msvcrt)の処理
 def check_stop():
     global is_stop_tool
-    input("タイトル取得を中断したい場合は Enter キーを押してください...。\n")
-    is_stop_tool = True
-    print(f"中断中...。中断時までのタイトルを出力します。")
+    print("Enterキーを押すとタイトル取得を中断します…")
+    while not stop_threading_event.is_set():
+        if msvcrt.kbhit():
+            key = msvcrt.getch()
+            if key == b'\r':  # Enterキーが押された
+                is_stop_tool = True
+                print("\n中断中… 処理を停止します。")
+                break
+        time.sleep(0.1)  # CPU使用率抑えるために小休止
 
 def normalize_title(title):
     title = re.sub(r"\(Japanese Edition\)", "", title, flags=re.IGNORECASE) # (Japanese Edition) を削除
@@ -31,8 +42,8 @@ def normalize_title_head(title):
     return title.strip().lower()
 
 def error_exit():
-    if 'web_driver' in globals():
-        web_driver.quit()
+    stop_threading_event.set()
+    input("エラーが発生しました。Enterを押してツールを終了してください...")
     exit(1)
 
 windows_user_name = os.getlogin()
@@ -58,19 +69,19 @@ try:
         web_driver.set_script_timeout(60)
         web_driver.maximize_window()
     except Exception as e:
-        print(f"Chromeブラウザの起動に失敗しました: {e}")
+        print(f"Chromeブラウザの起動に失敗しました")
         error_exit()
 
     # 初回のみ手動でログインが必要（以降は自動ログイン）
     input("ログインが完了したらEnterを押してください...")
-
+    
     start_time = time.time()
     # ここから自動スクロール
     SCROLL_PAUSE_SEC = 0.5
     no_new_elements_scroll_count  = 0
     SCROLL_NO_CHANGE_LIMIT = 120
 
-    print(f"\rタイトル出力中…。取得状況はツール実行時に表示されらブラウザを見てください。")
+    print(f"\rタイトル取得中…。取得状況はツール実行時に表示されらブラウザを見てください。")
     print(f"\rツールによって表示されたブラウザは最小化しないでください。")
 
     # 別スレッドでツール停止の入力待ちをする
@@ -79,13 +90,12 @@ try:
     try: 
         scroll_target = web_driver.find_element(By.ID, "library")
     except Exception as e:
-        print(f"Kindleライブラリのページが正しく読み込まれていません: {e}")
+        print(f"Kindleライブラリのページが正しく読み込まれていません")
         error_exit()
 
     # 最初の高さを取得（scroll対象の要素から）
     pos_before_scroll = web_driver.execute_script("return arguments[0].scrollTop", scroll_target)
     # 下へスクロール可能な限りスクロールを行う
-    is_stop_tool = False
     while True:
         if is_stop_tool:
             print(f"処理を中断しました。中断した時点でのタイトルを出力します。")
@@ -94,7 +104,7 @@ try:
         try:
             web_driver.execute_script("arguments[0].scrollTop = arguments[0].scrollHeight", scroll_target)
         except Exception as e:
-            print(f"スクロール処理でエラー発生: {e}")
+            print(f"スクロール処理でエラー発生")
             error_exit()
 
         # kindleの仕様上最下部にスクロールされて、本の読み込みが行われるため少し待機
@@ -111,7 +121,9 @@ try:
             no_new_elements_scroll_count  = 0
             pos_before_scroll = pos_after_scroll
 
-
+    stop_threading_event.set()
+    print(f"\rタイトル取得完了。テキストファイルに出力開始します。")
+    
     # 読み込みが終わったため、書籍タイトルを取得する
     html = web_driver.page_source
     soup = BeautifulSoup(html, 'html.parser')
@@ -132,7 +144,7 @@ try:
             for _, unique_book_title in sorted_book_titles:
                 f.write(unique_book_title + "\n")
     except Exception as e:
-        print(f"ファイルの書き込みに失敗しました: {e}")
+        print(f"ファイルの書き込みに失敗しました")
         error_exit()
 
     web_driver.quit()
@@ -145,6 +157,7 @@ try:
     input("my-kindle-listを終了するには Enter を押してください...")
 
 except Exception as e:
-    print(f"予期しないエラーが発生しました: {e}")
+    print(f"予期しないエラーが発生しました")
 finally:
-    error_exit()
+    if 'web_driver' in globals():
+        web_driver.quit()
